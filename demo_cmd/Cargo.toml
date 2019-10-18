@@ -1,0 +1,6 @@
+[package]
+name = "demo_cmd"
+version = "0.1.0"
+authors = ["Agus Susilo <smartgdi@gmail.com>"]
+
+[dependencies]

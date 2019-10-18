@@ -1,0 +1,13 @@
+[package]
+name = "demo_nickel"
+version = "0.1.0"
+authors = ["Agus Susilo <smartgdi@gmail.com>"]
+
+[dependencies]
+nickel = "*"
+rustc-serialize = "*"
+mysql = "11.1.0"
+
+[dependencies.hyper]
+version = "0.9"
+default-features = false

@@ -1,0 +1,9 @@
+[package]
+name = "gtkrs"
+version = "0.1.0"
+authors = ["susilo"]
+
+[dependencies]
+[dependencies.gtk]
+version = "0.2.0"
+features = ["v3_10"]
