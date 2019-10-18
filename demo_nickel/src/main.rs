@@ -15,7 +15,7 @@ struct User {
 }
 
 fn main() {
-	let pool = my::Pool::new("mysql:://root:aq?pada*di^^^@127.0.0.1:3306")
+	let pool = my::Pool::new("mysql:://user:password@127.0.0.1:3306")
 	let mut server  = Nickel::new();
 
 	server.utilize(explicit_router());
