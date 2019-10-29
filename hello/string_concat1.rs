@@ -7,9 +7,8 @@ fn main() {
 	println!("{}", hello());
 }
 
-fn hello() -> &str {
+fn hello() -> String {
 	let fname = "Agus ";
 	let lname = "Susilo";
-	let full_name = format!("{}{}", fname, lname);
-	return full_name;
+	format!("{}{}", fname, lname)
 }

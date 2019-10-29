@@ -19,7 +19,7 @@ pub struct CircleBuilder {
 
 impl CircleBuilder {
     fn new() -> Self {
-        CircleBuilder {opts.x: 0.0, opts.y: 0.0, opts.radius: 1.0,}
+        CircleBuilder { opts: Circle { x: 0.0, y: 0.0, radius: 1.0, } }
     }
 
     fn x(&mut self, coordinate: f64) -> &mut Self {
@@ -38,7 +38,7 @@ impl CircleBuilder {
     }
 
     fn finalize(&self) -> Circle {
-        Circle{x: self.x, y: self.y, radius: self.radius,}
+        Circle { x: self.opts.x, y: self.opts.y, radius: self.opts.radius, }
     }
 }
 

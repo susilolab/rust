@@ -1,13 +1,31 @@
-fn main() {
-	let v = [1i, 2i, 3i];
-	print_vec(v);
+struct Print;
 
-	let str_v = ["Hello", "you", "world"];
-	print_vec(str_v);
+trait Printer<T> {
+    fn print_vec(data: T);
 }
 
-fn print_vec<T: std::fmt::Display>(v: [T]) {
-	for i in v.iter() {
-		println!("{}", i);
-	}
+impl Printer<Vec<i32>> for Print {
+    fn print_vec(data: Vec<i32>) {
+        for i in data {
+            println!("{}", i);
+        }
+    }
+}
+
+impl Printer<Vec<&str>> for Print {
+    fn print_vec(data: Vec<&str>) {
+        for i in data {
+            println!("{}", i);
+        }
+    }
+}
+
+fn main() {
+	let v = vec![1, 2, 3];
+	// print_vec(v);
+    Print::print_vec(v);
+
+	let str_v = vec!["Hello", "you", "world"];
+	// print_vec(str_v);
+    Print::print_vec(str_v);
 }

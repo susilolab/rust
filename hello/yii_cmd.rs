@@ -3,7 +3,7 @@ use std::process::Command;
 fn main() {
     let output = Command::new("sh")
         .arg("-c")
-        .arg("ls /home/susilo")
+        .arg("/home/susilo/var/www/ecc4/protected/yii-dev")
         .output()
         .expect("Tidak dapat menjalankan command!.");
 

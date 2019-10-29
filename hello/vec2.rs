@@ -4,13 +4,13 @@ seperti dibawah ini
 lihat vec3.rs
 */
 fn main() {
-	let val = vec![1,2,3,4,5];
+	// let val = vec![1,2,3,4,5];
 
-	for x in val {
-		println!("{:?}", x);
-	}
+	// for x in val {
+	// 	println!("{:?}", x);
+	// }
 
-	for y in &val {
-		println!("{:?}", y);
-	}
+	// for y in &val {
+	// 	println!("{:?}", y);
+	// }
 }

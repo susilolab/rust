@@ -27,6 +27,9 @@ fn main() {
     });
 
     let button = gtk::Button::new_with_label("Click me!");
+    button.connect_clicked(|_| {
+        println!("Clicked!");
+    });
 
     window.add(&button);
 

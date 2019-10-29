@@ -2,8 +2,20 @@
 name = "gtkrs"
 version = "0.1.0"
 authors = ["susilo"]
+edition = "2018"
 
 [dependencies]
 [dependencies.gtk]
 version = "0.2.0"
 features = ["v3_10"]
+
+[profile.release]
+opt-level = 3
+debug = false
+rpath = false
+lto = false
+debug-assertions = false
+codegen-units = 16
+panic = 'unwind'
+incremental = false
+overflow-checks = false

@@ -1,3 +1,6 @@
+/// Contoh anonymous function pada rust
+/// fungsi anonymous dimulai dengan tanda || dan expression atau || dan { body expression }
+/// 
 fn main() {
 	// &str ke String
 	// let str = "Hello".to_string();
