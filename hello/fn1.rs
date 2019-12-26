@@ -5,6 +5,9 @@ fn main() {
     apply(hello);
 }
 
-fn apply<F>(f: F) where F: Fn() {
+fn apply<F>(f: F)
+where
+    F: Fn(),
+{
     f();
 }

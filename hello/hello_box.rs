@@ -1,13 +1,13 @@
 #![allow(warnings)]
-#![feature(box_syntax, box_patterns)]
+use std::boxed::Box;
 
 fn main() {
-	let slot = box 3;
+	let slot = Box::new(3);
 
-	helper(slot);
-	helper(slot);
+	helper(&slot);
+	helper(&slot);
 }
 
-fn helper(slot: Box<int>) {
+fn helper(slot: &Box<i32>) {
 	println!("The number was: {}", slot);
 }

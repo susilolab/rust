@@ -15,3 +15,4 @@ fn run_cmd(name: &str, args: &Vec<&'static str>) {
     let ls = output.stdout;
     println!("{:#?}", ls.iter().map(|&x| x as char).collect::<String>());
 }
+ 
