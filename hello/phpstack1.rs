@@ -13,12 +13,12 @@ struct Cmd {
 	name: &'static str,
 	env: &'static str,
 	args: Vec<&'static str>,
-	type: CmdType,
+	cmd_type: CmdType,
 }
 
 impl Cmd {
 	fn run(&self) {
-		println!(format!("Memulai {}..", self.name));
+		println!("{}", format!("Memulai {}..", self.name));
 		let child = Command::new(self.name)
 			.env("PATH", self.env)
 			.arg("-c")

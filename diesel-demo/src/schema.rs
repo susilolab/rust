@@ -14,3 +14,12 @@ table! {
         updated_date -> Nullable<Timestamp>,
     }
 }
+
+table! {
+    posts (id) {
+        id -> Integer,
+        title -> Text,
+        body -> Nullable<Text>,
+        published -> Integer,
+    }
+}

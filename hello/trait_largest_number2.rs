@@ -6,7 +6,9 @@ fn largest<T: PartialOrd + Copy>(list: &[T]) -> &T {
 			largest = item
 		}
 	}
-	&largest
+	let larg = largest;
+	
+	&larg
 }
 
 fn main() {

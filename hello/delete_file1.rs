@@ -1,9 +1,11 @@
 use std::io::{self, Write};
 use std::fs::{remove_file, remove_dir};
 use std::path::Path;
+use std::fmt;
+use std::process;
 
-const FILE_NAME: &static str = "output.txt";
-const DIR_NAME: &static str = "demos";
+const FILE_NAME: &'static str = "output.txt";
+const DIR_NAME: &'static str = "demos";
 
 fn main() {
 

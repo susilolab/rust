@@ -22,6 +22,8 @@ fn main() {
 		.env("PATH", rustc_path)
 		.arg(r#"d:\var\Rust\hello\bin"#)
 		.arg("-v")
+		.arg("--edition=2018")
+		.arg("-C opt-level=s")
 		.arg(file_name)
 		.output()
 		.expect("Gagal menjalankan perintah");

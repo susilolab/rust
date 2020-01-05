@@ -13,6 +13,9 @@ fn main() {
 
     let conn = establish_conn();
     show_conversation(&conn);
+
+    println!("---------------------------------------------------------------------");
+    show_posts(&conn);
 }
 
 pub fn establish_conn() -> MysqlConnection {
@@ -32,7 +35,7 @@ fn show_conversation(conn: &MysqlConnection) {
 
     let result = ommu_conversations
         // .filter(published.eq(1))
-        .limit(20)
+        .limit(5)
         .load::<Conversation>(conn)
         .expect("Error");
 
@@ -42,4 +45,22 @@ fn show_conversation(conn: &MysqlConnection) {
 
     let r: diesel::result::QueryResult<Conversation> = ommu_conversations.find(1).first(conn);
     println!("{:?}", r);
+}
+
+fn show_posts(conn: &MysqlConnection) {
+    use schema::posts::dsl::*;
+    use model::*;
+
+    let result = posts
+        // .filter(published.eq(1))
+        .limit(5)
+        .load::<Post>(conn)
+        .expect("Error");
+
+    for x in result {
+        println!("{:?}", x);
+    }
+
+    // let r: diesel::result::QueryResult<Conversation> = posts.find(1).first(conn);
+    // println!("{:?}", r);
 }

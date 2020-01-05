@@ -26,3 +26,12 @@ pub struct NewConversation {
     pub user_id: i32,
     pub creation_date: Option<chrono::NaiveDateTime>,
 }
+
+#[derive(Debug, Queryable, Serialize, Deserialize, Insertable, PartialEq)]
+#[table_name="posts"]
+pub struct Post {
+    pub id: i32,
+    pub title: String,
+    pub body: Option<String>,
+    pub published: i32,
+}

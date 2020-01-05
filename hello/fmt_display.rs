@@ -1,3 +1,5 @@
+/// Mengimplementasikan `fmt::Display` untuk struk Triangle agar bisa diprint pake format string `{}`
+///
 use std::fmt;
 
 #[derive(Debug)]
@@ -9,7 +11,7 @@ struct Triangle {
 
 impl fmt::Display for Triangle {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write(!f, "({}, {}, {})", self.a, self.b, self.c)
+		write!(f, "({}, {}, {})", self.a, self.b, self.c)
 	}
 }
 

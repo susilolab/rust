@@ -8,6 +8,7 @@
 /// 3. Catat error dan file yg gagal di kompile ke file
 /// 4. Hapus file debug
 ///
+#[warn(unused_must_use)]
 use std::fs;
 use std::process::Command;
 use std::io::{Write};
@@ -94,7 +95,7 @@ fn write_log(file_name: &str, content: String) {
     match file {
         Err(e) => eprintln!("{}", e),
         Ok(mut f) => {
-            f.write_all(content.as_bytes());
+            let _ = f.write_all(content.as_bytes());
         }
     }
 }

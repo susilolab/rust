@@ -4,23 +4,23 @@ fn cek_prima(bil: i32) -> i32 {
 	let mut bagi: i32 = 3;
 	let mut batas: i32 = 0;
 
-	if bil == 1 {
-		return 0;
+	let prima = if bil == 1 {
+		0
 	}else if bil == 2 || bil == 3 {
-		return 1;
+		1
 	}else if bil % 2 ==0 {
-		return 0;
+		0
 	}else {
 		while batas > bagi {
 			if bil % bagi == 0 {
-				return 0;
-				break;
+				return 0
 			}
 			batas = bil/bagi;
 			bagi += 2;
 		}
 		return 1;
-	}
+	};
+	prima
 }
 
 fn main() {

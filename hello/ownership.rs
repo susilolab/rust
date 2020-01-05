@@ -1,3 +1,5 @@
+/// Contoh borrowing struct
+///
 struct Book {
 	title: String,
 	chapters: Vec<String>

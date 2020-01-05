@@ -1,4 +1,5 @@
-#[use_macro]
+fn main() {}
+
 #[test]
 fn this_tests_code() {
 	println!("");
