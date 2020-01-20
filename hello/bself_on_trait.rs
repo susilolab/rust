@@ -2,6 +2,9 @@
 /// pada saat trait di implementasi bisa mengembalikan tipe sesuai
 /// dengan struk yg meng-`implementasi` trait tsb
 ///
+/// `Self` dengan huruf kapital "S" digunakan untuk merujuk pada tipe implementasi pada traits
+/// Self hanya bisa digunakan sbg segmen pertama, tanpa awalan `::`
+/// 
 trait A {
     fn new(name: String) -> Self;
 }
