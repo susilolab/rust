@@ -18,4 +18,6 @@ impl HasArea for Circle {
 }
 
 fn main() {
+	let circle = Circle { x: 2.0, y: 4.0, radius: 3.0 };
+	println!("{}", circle.area());
 }

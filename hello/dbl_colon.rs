@@ -1,3 +1,5 @@
+// double color `::` menunjukkan root crate
+//
 // pada rust 2015 kode sukses dikompile
 // rustc --edition=2015 --out-dir=bin dbl_colon.rs
 //
