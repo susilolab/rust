@@ -1,3 +1,5 @@
+// Implementasi trait `ToString` untuk struk `Person` untuk dapat menggunakan fungsi `to_string`
+//
 struct Person {
     name: String,
     age: u8,

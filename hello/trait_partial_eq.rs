@@ -1,3 +1,5 @@
+// Contoh penggunaan `enum` pada rust
+//
 enum BookFormat {
     Paperback,
     Hardback,

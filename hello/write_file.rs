@@ -8,7 +8,7 @@ fn main() {
 }
 
 fn write_file() -> std::io::Result<()> {
-    let mut file = File::create("foo.txt")?;
+    let mut file = File::create("/tmp/foo.txt")?;
     file.write_all(b"Hello world!")?;
     Ok(())
 }

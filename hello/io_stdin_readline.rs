@@ -1,4 +1,7 @@
-// use std::io;
+// Membuat input dari console dapat menggunakan `print!`
+// dan inputan berada disampingnya
+// dengan cara memflush `stdout`
+//
 use std::io::{self, Write};
 
 fn main() {

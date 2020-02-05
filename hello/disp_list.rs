@@ -1,5 +1,9 @@
+// implementasi struk tuple agar bisa dicetak menggunakan format `{}`
+// pada fungsi `print!` atau `println!`
+//
 use std::fmt;
 
+// Deklarasi struk tupple dengan tipe vector i32
 struct List(Vec<i32>);
 
 impl fmt::Display for List {
