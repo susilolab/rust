@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 /// Buat latihan tapi masih error saat dikompile
 ///
-/// agar bisa dikompile maka pake patter matching pada
+/// agar bisa dikompile maka pake pattern matching pada
 /// parameter function pd kasus ini adalah `xs`
 ///
 /// macro `#![allow(dead_code)]` mengijinkan kode yang tidak digunakan tanpa peringatan
