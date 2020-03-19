@@ -1,3 +1,7 @@
+// Contoh from dan into
+// Jika kita sudah mengimplementasikan `From` maka kita akan
+// dapat implementasi `Into` secara gratis
+//
 use std::convert::From;
 
 #[derive(Debug)]
@@ -15,5 +19,9 @@ fn main() {
     assert_eq!(u16::from(13u8), 13u16);
 
     let num = Number::from(30);
+    println!("My number is {:?}", num);
+
+    let int = 5;
+    let num: Number = int.into();
     println!("My number is {:?}", num);
 }

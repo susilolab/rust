@@ -1,8 +1,8 @@
-extern crate gtk;
 extern crate gio;
+extern crate gtk;
 
-use gtk::prelude::*;
 use gio::prelude::*;
+use gtk::prelude::*;
 use gtk::{Application, ApplicationWindow, Button};
 
 fn main() {

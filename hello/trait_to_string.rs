@@ -7,7 +7,7 @@ struct Person {
 
 impl ToString for Person {
     fn to_string(&self) -> String {
-        return format!("Nama saya {} dan umur saya {}", self.name, self.age)
+        format!("Nama saya {} dan umur saya {}", self.name, self.age)
     }
 }
 
