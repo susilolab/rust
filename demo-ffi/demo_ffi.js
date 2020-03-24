@@ -1,6 +1,6 @@
 var ffi = require('ffi');
 
-var lib = ffi.Library('./target/debug/libdemo_ffi', {
+var lib = ffi.Library('./target/release/libdemo_ffi', {
 	'double_input': ['int', ['int']]
 });
 
