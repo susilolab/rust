@@ -3,6 +3,7 @@ name = "playground"
 version = "0.1.0"
 authors = ["susilo"]
 edition = "2018"
+default-run = "main"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -19,3 +20,12 @@ actix-web-actors = "1.0.2"
 mysql = "16.1.0"
 chrono = "0.4.9"
 turtle = "^1.0.0-rc.2"
+ssh2 = "0.8.2"
+
+[[bin]]
+name = "ssh"
+path = "src/ssh.rs"
+
+[[bin]]
+name = "main"
+path = "src/main.rs"

@@ -1,3 +1,5 @@
+// Ubah data dari tipe string ke integer
+//
 fn main() {
 	let x = "10".to_string();
 	let y: i32 = x.parse().unwrap();

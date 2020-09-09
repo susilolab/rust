@@ -1,8 +1,10 @@
+// struk fibonaci
 struct Fibonacci {
     curr: u32,
     next: u32,
 }
 
+// implementasi `Iterator` untuk struk fibonaci
 impl Iterator for Fibonacci {
     type Item = u32;
 

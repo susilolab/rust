@@ -1,5 +1,9 @@
 // array static pada rust
 // gunakan vec! untuk dinamik elemen
+// deklarasi:
+// [type; length]
+// let n: [i32; 3] = [1, 2, 3];
+//
 fn main() {
 	let mut name = [""; 4];
 	name[0] = "Agus";

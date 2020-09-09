@@ -3,6 +3,8 @@
 /// digunakan untuk looping jangkauan misal `a..b`
 /// `a..b` brarti dari a s/d sebelum b
 /// kalau angka maka `1..10` dimulai dari 1 s/d 9
+/// 
+/// Inclusive ranges
 /// agar looping mengikutkan jangkauan terakhir maka gunakan
 /// a..=b atau 1..=10
 /// maka jangkauan terakhir akan dipakai
