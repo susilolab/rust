@@ -18,10 +18,10 @@ fn main() {
 			let fname = format!("{}/Cargo.toml", file);
 			if Path::new(&fname).exists() {
 				let file_name = Path::new(&file).file_name().unwrap().to_str().unwrap();
-				if file_name == "auto_task" {
+				// if file_name == "auto_task" {
 					println!("{}", file);
 					clean_prj(file);
-				}
+				// }
 			}
 		}
 	}

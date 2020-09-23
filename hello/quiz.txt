@@ -1,0 +1,660 @@
+trait Trait {
+    fn p(self);
+}
+
+impl<T> Trait for fn(T) {
+    fn p(self) {
+        print!("1");
+    }
+}
+
+impl<T> Trait for fn(&T) {
+    fn p(self) {
+        print!("2");
+    }
+}
+
+fn f(_: u8) {}
+fn g(_: &u8) {}
+
+fn main() {
+    let a: fn(_) = f;
+    let b: fn(_) = g;
+    let c: fn(&_) = g;
+    a.p();
+    b.p();
+    c.p();
+}
+
+112
+
+Correct!
+
+The first impl applies to function pointers of type fn(T) where T is any single concrete type. The second impl applies to function pointers of higher-ranked type for<'a> fn(&'a T) for some concrete type T that outlives 'a.
+
+Inside of main, the compiler is going to use type inference to substitute all occurrences of _ in a type by some concrete type.
+
+For the closure a we infer _ = u8, yielding the closure type fn(u8) taking an argument of type u8 and returning ().
+
+For b we infer _ = &'x u8 for some concrete lifetime 'x that will ultimately feed into the borrow checker. The type of b is fn(&'x u8).
+
+And finally for c we infer _ = u8, yielding the higher-ranked closure type for<'a> fn(&'a u8).
+
+Framed in this way, it follows that the trait method calls at the end of main print 112.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+use std::fmt::{self, Display};
+
+struct S;
+
+impl Display for S {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("1")
+    }
+}
+
+impl Drop for S {
+    fn drop(&mut self) {
+        print!("2");
+    }
+}
+
+fn f() -> S {
+    S
+}
+
+fn main() {
+    let S = f();
+    print!("{}", S);
+}
+
+212
+
+
+Correct!
+
+This program prints 212.
+
+No value of type S gets dropped within the body of function f. The function f conjures an S and returns ownership of it to the caller of f; the caller determines when to drop the S of which it received ownership.
+
+On the first line of main, we call f() and perform an infallible match that binds no new variables. As no variables are declared on this line, there is no variable that could be the owner of the S returned by f() so that S is dropped at that point, printing 2. The S in let S = f() is a unit struct pattern (not a variable name) that matches a value of type S via destructuring but does not bind the value to any variable.
+
+The second line of main conjures a new S, prints it, and drops it at the semicolon.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+trait Trait {
+    fn p(&self);
+}
+
+impl Trait for (u32) {
+    fn p(&self) { print!("1"); }
+}
+
+impl Trait for (i32,) {
+    fn p(&self) { print!("2"); }
+}
+
+impl Trait for (u32, u32) {
+    fn p(&self) { print!("3"); }
+}
+
+impl Trait for (i32, i32,) {
+    fn p(&self) { print!("4"); }
+}
+
+fn main() {
+    (0).p();
+    (0,).p();
+    (0, 0).p();
+    (0, 0,).p();
+}
+
+1244
+
+
+
+Correct!
+
+The trailing comma is required in the case of a 1-tuple, (0,), because it disambiguates it from (0) which is identical to 0. However, for larger tuples, it is entirely optional: (i32) is a distinct type from (i32,), but (i32, i32) and (i32, i32,) are the same.
+
+An integral literal 0 can be inferred to be any integer type, but defaults to i32 if insufficient type information is available. (0) is inferred to be a u32 and (0,) is inferred to be a (i32,) because those are respectively the only integral and 1-tuple types with an implementation for Trait.
+
+Since (0, 0) and (0, 0,) have the same type, the output of their p methods must be the same, but Rust needs to somehow choose between the two possible implementations of Trait, namely (u32, u32) and (i32, i32). Since i32 is the default integral type, (i32, i32) is chosen in both cases.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+struct S(i32);
+
+impl std::ops::BitAnd<S> for () {
+    type Output = ();
+
+    fn bitand(self, rhs: S) {
+        print!("{}", rhs.0);
+    }
+}
+
+fn main() {
+    let f = || ( () & S(1) );
+    let g = || { () & S(2) };
+    let h = || ( {} & S(3) );
+    let i = || { {} & S(4) };
+    f();
+    g();
+    h();
+    i();
+}
+
+123
+
+
+
+Correct!
+
+The closures f, g, and h are all of type impl Fn(). The closure bodies are parsed as an invocation of the user-defined bitwise-AND operator defined above by the BitAnd trait impl. When the closures are invoked, the bitwise-AND implementation prints the content of the S from the right-hand side and evaluates to ().
+
+The closure i is different. Formatting the code with rustfmt makes it clearer how i is parsed.
+
+let i = || {
+    {}
+    &S(4)
+};
+
+The closure body consists of an empty block-statement {} followed by a reference to S(4), not a bitwise-AND. The type of i is impl Fn() -> &'static S.
+
+The parsing of this case is governed by this code in libsyntax.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+trait Trait {
+    fn f(&self);
+    fn g(&self);
+}
+
+struct S;
+
+impl S {
+    fn f(&self) {
+        print!("1");
+    }
+
+    fn g(&mut self) {
+        print!("1");
+    }
+}
+
+impl Trait for S {
+    fn f(&self) {
+        print!("2");
+    }
+
+    fn g(&self) {
+        print!("2");
+    }
+}
+
+fn main() {
+    S.f();
+    S.g();
+}
+
+12
+
+
+
+Correct!
+
+S.f() calls the inherent method f. If an inherent method and a trait method have the same name and receiver type, plain method call syntax will always prefer the inherent method. The caller would need to write Trait::f(&S) or <S as Trait>::f(&S) in order to call the trait method.
+
+It is important for macro authors to be aware of this. Macro-generated code typically should not use method call syntax to invoke trait methods on types defined by the user. Those calls could get unintentially hijacked by inherent methods having the same name as the trait method.
+
+On the other hand, S.g() calls the trait method g. Auto-ref during method resolution always prefers making something into & over making it into &mut where either one would work.
+
+See this Stack Overflow answer for a more detailed explanation of auto-ref during method resolution.
+https://stackoverflow.com/a/28552082/6086311
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+macro_rules! m {
+    ($a:tt) => { print!("1") };
+    ($a:tt $b:tt) => { print!("2") };
+    ($a:tt $b:tt $c:tt) => { print!("3") };
+    ($a:tt $b:tt $c:tt $d:tt) => { print!("4") };
+    ($a:tt $b:tt $c:tt $d:tt $e:tt) => { print!("5") };
+    ($a:tt $b:tt $c:tt $d:tt $e:tt $f:tt) => { print!("6") };
+    ($a:tt $b:tt $c:tt $d:tt $e:tt $f:tt $g:tt) => { print!("7") };
+}
+
+fn main() {
+    m!(-1);
+    m!(-1.);
+    m!(-1.0);
+    m!(-1.0e1);
+    m!(-1.0e-1);
+}
+
+22222
+
+
+Correct!
+
+All five invocations of m! pass two tokens as input: a minus sign followed by an integer or floating point literal token.
+
+The floating point literals 1., 1.0, 1.0e1, 1.0e-1 are each a single atomic token.
+
+The parser built into the Rust compiler always parses a negative sign as a separate token from the numeric literal that is being negating. However, it is possible for a user-defined parser within a procedural macro to construct a negative number as a single token by passing a negative integer or negative floating point value to one of the constructors of proc_macro::Literal. If such a negative literal ends up in the input of a subsequent procedural macro invocation, it is up to the compiler whether to rewrite into a pair of tokens or keep them as one.
+
+The behavior of the compiler's parser is observable in the surface language as well, not only in macros. For example the following code prints -81 because the expression is parsed as -(3i32.pow(4)) rather than (-3i32).pow(4).
+
+fn main() {
+    let n = -3i32.pow(4);
+    println!("{}", n);
+}
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+struct S {
+    x: i32,
+}
+
+const S: S = S { x: 2 };
+
+fn main() {
+    let v = &mut S;
+    v.x += 1;
+    S.x += 1;
+    print!("{}{}", v.x, S.x);
+}
+
+32
+The semantics of const is that any mention of the const by name in expression position is substituted with the value of the const initializer. In this quiz code the behavior is equivalent to:
+
+struct S {
+    x: i32,
+}
+
+fn main() {
+    let v = &mut S { x: 2 };
+    v.x += 1;
+    S { x: 2 }.x += 1;
+    print!("{}{}", v.x, S { x: 2 }.x);
+}
+
+I have simply substituted every mention of S in expresson position with the value of const S which is S { x: 2 }.
+
+The first line of main is equivalent to:
+
+let mut _tmp0 = S { x: 2 };
+let v = &mut _tmp0;
+
+The second line of main mutates the value pointed to by v. The same value remains accessible through v for the rest of the lifetime of v, which is why the first character printed is 3.
+
+The third line of main mutates a temporary that immediately goes out of scope at the semicolon. The second character printed is coming from a brand new S { x: 2 }, so 2 is printed.
+
+One additional wrinkle in this code is the concept of namespaces and name resolution in Rust. Any name that refers to a type lives in the type namespace, and any name that refers to a value lives in the value namespace. These are two separate sets of names, and the language is structured such that we can always tell which namespace to look up a name in.
+
+In the context of the quiz code, the name of the struct S is part of the type namespace and the name of the const S is part of the value namespace. That is how we can have seemingly two different things with the same name in scope at the same time.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+struct S {
+    f: fn(),
+}
+
+impl S {
+    fn f(&self) {
+        print!("1");
+    }
+}
+
+fn main() {
+    let print2 = || print!("2");
+    S { f: print2 }.f();
+}
+
+1
+
+A call that looks like .f() always resolves to a method, in this case the inherent method S::f. If there were no method f in scope, a call like this would fail to compile even if a field f exists and contains a function pointer.
+
+To call the function pointer stored in field f, we would need to write parentheses around the field access:
+
+fn main() {
+    let print2 = || print!("2");
+    (S { f: print2 }.f)();
+}
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+trait Base {
+    fn method(&self) {
+        print!("1");
+    }
+}
+
+trait Derived: Base {
+    fn method(&self) {
+        print!("2");
+    }
+}
+
+struct BothTraits;
+impl Base for BothTraits {}
+impl Derived for BothTraits {}
+
+fn dynamic_dispatch(x: &dyn Base) {
+    x.method();
+}
+
+fn static_dispatch<T: Base>(x: T) {
+    x.method();
+}
+
+fn main() {
+    dynamic_dispatch(&BothTraits);
+    static_dispatch(BothTraits);
+}
+
+11
+
+The two traits Base and Derived each define a trait method called method. These methods happen to have the same name but are otherwise unrelated methods as explained below.
+
+Both traits provide a default implementation of their trait method. Default implementations are conceptually copied into each trait impl that does not explicitly define the same method. In this case for example impl Base for BothTraits does not provide its own implementation of Base::method, which means the implementation of Base for BothTraits will use the default behavior defined by the trait i.e. print!("1").
+
+Additionally, Derived has Base as a supertrait which means that every type that implements Derived is also required to implement Base. The two trait methods are unrelated despite having the same name -- thus any type that implements Derived will have an implementation of Derived::method as well as an implementation of Base::method and the two are free to have different behavior. Supertraits are not inheritance! Supertraits are a constraint that if some trait is implemented, some other trait must also be implemented.
+
+Let's consider what happens in each of the two methods called from main.
+
+    dynamic_dispatch(&BothTraits)
+
+    The argument x is a reference to the trait object type dyn Base. A trait object is a little shim generated by the compiler that implements the trait with the same name by forwarding all trait method calls to trait methods of whatever type the trait object was created from. The forwarding is done by reading from a table of function pointers contained within the trait object.
+
+    // Generated by the compiler.
+    //
+    // This is an implementation of the trait `Base` for the
+    // trait object type `dyn Base`, which you can think of as
+    // a struct containing function pointers.
+    impl Base for (dyn Base) {
+        fn method(&self) {
+            /*
+            Some automatically generated implementation detail
+            that ends up calling the right type's impl of the
+            trait method Base::method.
+            */
+        }
+    }
+
+    In the quiz code, x.method() is a call to this automatically generated method whose fully qualified name is <dyn Base as Base>::method. Since x was obtained by converting a BothTraits to dyn Base, the automatically generated implementation detail will wind up forwarding to <BothTraits as Base>::method which prints 1.
+
+    Hopefully it's clear from all of this that nothing here has anything to do with the unrelated trait method Derived::method defined by BothTraits. Especially notice that x.method() cannot be a call to Derived::method because x is of type dyn Base and there is no implementation of Derived for dyn Base.
+
+    static_dispatch(BothTraits)
+
+    At compile time we know that x.method() is a call to <T as Base>::method. Type inference within generic functions in Rust happens independently of any concrete instantiation of the generic function i.e. before we know what T may be, other than the fact that it implements Base. Thus no inherent method on the concrete type T or any other trait method may affect what method x.method() is calling. By the time that T is decided, it has already been determined that x.method() is calling <T as Base>::method.
+
+    The generic function is instantiated with T equal to BothTraits so this is going to call <BothTraits as Base>::method which prints 1.
+
+If you are familiar with C++, the behavior of this code in Rust is different from the behavior of superficially analogous C++ code. In C++ the output would be 22 as seen in the following implementation. This highlights the difference between Rust's traits and supertraits vs C++'s inheritance.
+
+#include <iostream>
+
+struct Base {
+    virtual void method() const {
+        std::cout << "1";
+    }
+};
+
+struct Derived: Base {
+    void method() const {
+        std::cout << "2";
+    }
+};
+
+void dynamic_dispatch(const Base &x) {
+    x.method();
+}
+
+template <typename T>
+void static_dispatch(const T x) {
+    x.method();
+}
+
+int main() {
+    dynamic_dispatch(Derived{});
+    static_dispatch(Derived{});
+}
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+trait Trait {
+    fn f(&self);
+}
+
+impl<F: FnOnce() -> bool> Trait for F {
+    fn f(&self) {
+        print!("1");
+    }
+}
+
+impl Trait for () {
+    fn f(&self) {
+        print!("2");
+    }
+}
+
+fn main() {
+    let x = || { (return) || true; };
+    x().f();
+
+    let x = loop { (break) || true; };
+    x.f();
+
+    let x = || { return (|| true); };
+    x().f();
+
+    let x = loop { break (|| true); };
+    x.f();
+
+    let x = || { return || true; };
+    x().f();
+
+    let x = loop { break || true; };
+    x.f();
+}
+
+221111
+
+We want to know whether each possible parenthesization of return || true; and break || true; evaluates to the closure || true or to the unit value ().
+
+    let x = || { (return) || true; };
+
+    On this line, x is a closure that returns (). It is equivalent to let x = || {}. When we call x().f(), the method f resolves to impl Trait for () which prints 2.
+
+    The type of the expression (return) is the primitive never type, usually written as !. It is legal to compute ! || true because ! can fill in for any type, in this case bool. The expression ! || true is a logical-OR with bool on both the left-hand side and right-hand side.
+
+    The behavior of ! of filling in for any type is what allows us to write:
+
+    fn f() -> bool {
+        unimplemented!()
+    }
+
+    in which the type of unimplemented!(), since it panics without evaluating to any value, is also !.
+
+    let x = loop { (break) || true; };
+
+    Similar to (return), the type of (break) is the never type !. This code breaks out of the loop with the implicit value (), so x is of type (). Calling x.f() will print 2.
+
+    let x = || { return (|| true); };
+
+    On this line x is a closure that returns a closure that returns true. You could write x()() and that would be true.
+
+    The quiz code calls x().f() which resolves to impl<F> Trait for F where F: FnOnce() -> bool. That trait impl prints 1.
+
+    let x = loop { break (|| true); };
+
+    This is a loop containing a break-with-value expression. The argument of the break becomes the value of the enclosing loop. This code is equivalent to let x = || true.
+
+    When we call x.f() it uses the FnOnce impl of Trait which prints 1.
+
+    let x = || { return || true; };
+
+    Now we arrive at the meat of this quiz question. Is return || true parsed the same as (return) || true or as return (|| true)?
+
+    It turns out to be the latter, so x is a closure that returns a closure that returns true. x().f() prints 1.
+
+    let x = loop { break || true; };
+
+    Similar question here, is this (break) || true or break (|| true)?
+
+    The break-with-value language feature was added to Rust more than two years after 1.0, in Rust 1.19. Prior to break-with-value, break || true was perfectly legal Rust code that parsed as (break) || true.
+
+    In Rust 1.19 the behavior of this code was unintentionally broken by the language such that now it parses as break (|| true) and the printed value is 1.
+
+    If we had noticed this change in meaning during the development of Rust 1.19, we may have adjusted the parsing to preserve the meaning of existing code. Unfortunately doing so would result in a grammar that behaves differently between return and break for no justifiable reason other than an accident of history.
+
+    Or it is possible we would have ruled this an edge case of syntax that would never appear in real code, used Crater to validate that hypothesis, and broken the behavior intentionally.
+
+The total output from main is 221111.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+fn main() {
+    let (.., x, y) = (0, 1, ..);
+    print!("{}", b"066"[y][x]);
+}
+
+54
+
+This question demonstrates two different meanings of ...
+
+In expression position, .. is the syntax for constructing various types of ranges. Here the expression (0, 1, ..) is a tuple with three elements, the third one having type RangeFull.
+
+On the other hand in a pattern, .. is used to mean "any number of elements". So the pattern (.., x, y) matches a tuple with 2 or more elements, binding the second-last one to x and the last one to y.
+
+Coming out of the first line of main, we have x = 1 and y = (..). Thus the value printed is going to be b"066"[..][1].
+
+The expression b"066" is a byte-string literal of type &'static [u8; 3] containing the three ASCII bytes b'0', b'6', b'6'.
+
+When we slice the byte-string with RangeFull we get a dynamically sized slice [u8] of length 3. Next we access element 1 of the slice, which is the byte b'6' of type u8. When printed, we see the decimal representation of the byte value of the ASCII digit 6, which is the number 54.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+trait Trait: Sized {
+    fn is_reference(self) -> bool;
+}
+
+impl<'a, T> Trait for &'a T {
+    fn is_reference(self) -> bool {
+        true
+    }
+}
+
+fn main() {
+    match 0.is_reference() {
+        true => print!("1"),
+        false => print!("0"),
+    }
+
+    match '?'.is_reference() {
+        true => print!("1"),
+        false => {
+            impl Trait for char {
+                fn is_reference(self) -> bool {
+                    false
+                }
+            }
+            print!("0")
+        }
+    }
+}
+
+10
+
+Trait impls anywhere in a program are always in scope, so there is no significance to the impl Trait for char being written inside of a block of code. In particular, that impl is visible throughout the whole program, not just within the block containing the impl.
+
+This question relates to the behavior of trait method auto-ref which is covered in this Stack Overflow answer.[https://stackoverflow.com/a/28552082/6086311]
+
+The call to 0.is_reference() observes that there is no implementation of Trait for an integer type that we could call directly. Method resolution inserts an auto-ref, effectively evaluating (&0).is_reference(). This time the call matches impl<'a, T> Trait for &'a T and prints 1.
+
+The call to '?'.is_reference() instead finds impl Trait for char, printing 0.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+macro_rules! m {
+    (==>) => { print!("1"); };
+    (= = >) => { print!("2"); };
+    (== >) => { print!("3"); };
+    (= =>) => { print!("4"); };
+}
+
+fn main() {
+    m!(==>);
+    m!(= = >);
+    m!(== >);
+    m!(= =>);
+}
+
+1214
+
+Adjacent punctuation characters in the input pattern of a macro_rules! macro are grouped according to how those characters are used by native Rust tokens.
+
+This page contains a list of the single-character and multi-character punctuation tokens involved in the Rust grammar.
+
+As one example from that list, <<= is a single token because the Rust grammar uses that sequence of characters to mean left shift assignment. Thus a macro_rules! input rule containing <<= would only match if all three characters <<= are written consecutively without spaces in the invocation.
+
+But for example =<< is not a native token in the Rust grammar. The parser of macro_rules! will decompose this into Rust tokens according to a greedy process. =< is also not a native token, so first we would need to match a = by itself. Then << is a native token. Writing =<< in a macro rule behaves exactly the same as writing = <<.
+
+Now let's decompose the rules in the quiz code the same way.
+
+    ==> decomposes as == >.
+    = = > is already decomposed into Rust tokens.
+    == > is already decomposed.
+    = => is already decomposed.
+
+Our macro is the same as if we had written the first rule with a space. The third rule is unreachable.
+
+macro_rules! m {
+    (== >) => { print!("1"); };
+    (= = >) => { print!("2"); };
+    (== >) => { print!("3"); };
+    (= =>) => { print!("4"); };
+}
+
+Within main, the first and third lines both match the first macro rule. The second line matches the second rule and the fourth line matches the fourth rule. The output is 1214.
+
+Procedural macros use a more flexible and powerful macro API and can always distinguish between different spacings of the same characters, such as == > vs ==>.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+fn main() {
+    let input = vec![1, 2, 3];
+
+    let parity = input
+        .iter()
+        .map(|x| {
+            print!("{}", x);
+            x % 2
+        });
+
+    for p in parity {
+        print!("{}", p);
+    }
+}
+
+112031
+
+As described in the documentation of the Iterator::map method, the map operation is performed lazily. The closure provided as an argument to map is only invoked as values are consumed from the resulting iterator. The closure is not applied eagerly to the entire input stream up front.
+
+In this code, the for loop is what drives the iteration. For each element consumed from the parity iterator, our closure needs to be evaluated one time. Thus the output will alternate between numbers printed by the closure and numbers printed by the loop body.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+trait Trait {
+    fn f(&self);
+}
+
+impl Trait for u32 {
+    fn f(&self) {
+        print!("1");
+    }
+}
+
+impl<'a> Trait for &'a i32 {
+    fn f(&self) {
+        print!("2");
+    }
+}
+
+fn main() {
+    let x = &0;
+    x.f();
+}
+
+1
+
+During type inference the variable x has type &{integer}, a reference to some as yet undetermined integer type.
+
+If we want to resolve the trait method call Trait::f(x), we find that its argument x must be of type &Self for some type Self that implements Trait. We find that inferring 0: u32 satisfies both the constraint that u32 is an integer as well as u32 implements Trait, so the method call ends up calling <u32 as Trait>::f(x) and prints 1.
+
+Trait method resolution is covered in more detail in this Stack Overflow answer.[https://stackoverflow.com/a/28552082/6086311]
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+https://dtolnay.github.io/rust-quiz/15

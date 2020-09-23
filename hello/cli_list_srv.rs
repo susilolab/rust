@@ -13,5 +13,7 @@ fn run_cmd(name: &str, args: &Vec<&'static str>) {
         .expect("Tidak dapat menjalankan command.");
 
     let ls = output.stdout;
-    println!("{:#?}", ls.iter().map(|&x| x as char).collect::<String>());
+    let s = ls.iter().map(|&x| x as char).collect::<String>();
+    let s_arr: Vec<&str> = s.split('\n').collect();
+    println!("{:#?}", s_arr);
 }

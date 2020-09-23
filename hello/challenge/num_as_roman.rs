@@ -18,9 +18,10 @@ fn num_as_roman(num: i32) -> String {
 #[test]
 fn test_kembalian() {
 	assert_eq!(num_as_roman(182), "CLXXXII");
-	// C = 100
-	// L = 50
-	// X = 10
+	// C   = 100
+	// L   =  50
+	// XXX =  30
+	// II  =   2
 	assert_eq!(num_as_roman(1990), "MCMXC");
 	// M = 1_000
 	// C = 100

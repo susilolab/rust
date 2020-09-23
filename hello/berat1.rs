@@ -7,11 +7,17 @@ struct Baby {
     present_weight: i32,
 }
 
+impl Baby {
+    fn new(name: String, past_weight: i32, present_weight: i32) -> Self {
+        Self { name, past_weight, present_weight }
+    }
+}
+
 fn main() {
     // let mut data: Vec<Baby> = Vec::new();
-    // br(None);
-    // let ask_cnt = prompt("Masukan jumlah data yang akan di input: ");
-    // let cnt = ask_cnt.parse::<i32>().unwrap();
+    let ask_cnt: &str = prompt("Masukan jumlah data yang akan di input: ");
+    // let cnt: i32 = ask_cnt.parse::<i32>().unwrap();
+    println!("{:?}", ask_cnt);
 
     // for _x in 0..cnt {
     //     let name = prompt("Masukan nama bayi: ");
