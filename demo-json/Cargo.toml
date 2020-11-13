@@ -2,6 +2,18 @@
 name = "demo-json"
 version = "0.1.0"
 authors = ["susilo"]
+edition = "2018"
+default-run = "main"
 
 [dependencies]
-rustc-serialize = "0.3.24"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
+
+[[bin]]
+name = "from_file"
+path = "src/from_file.rs"
+

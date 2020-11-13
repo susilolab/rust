@@ -8,8 +8,10 @@ extern crate gtk;
 
 mod hello_gtk;
 mod list_store;
+mod closure;
 
 fn main() {
     // hello_gtk::run();
-    list_store::run();
+    // list_store::run();
+    closure::run();
 }

@@ -21,6 +21,7 @@ mysql = "16.1.0"
 chrono = "0.4.9"
 turtle = "^1.0.0-rc.2"
 ssh2 = "0.8.2"
+walkdir = "2.3.1"
 
 [[bin]]
 name = "ssh"
@@ -29,3 +30,7 @@ path = "src/ssh.rs"
 [[bin]]
 name = "main"
 path = "src/main.rs"
+
+[[bin]]
+name = "walkdir"
+path = "src/walkdir.rs"

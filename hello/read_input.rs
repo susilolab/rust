@@ -1,12 +1,14 @@
 use std::io;
+use std::io::Write;
 
-fn main() {
+fn main() -> std::io::Result<()> {
+	print!("Ketikan nama kamu: ");
+	io::stdout().flush()?;
+
 	let mut input = String::new();
-	match io::stdin().read_line(&mut input) {
-		Ok(n) => {
-			println!("{}", n);
-			println!("{}", input);
-		}
-		Err(error) => println!("{}", error),
-	}
+	io::stdin().read_line(&mut input)?;
+
+	println!("Namamu: {}", input);
+
+	Ok(())
 }

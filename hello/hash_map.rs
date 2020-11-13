@@ -24,7 +24,7 @@ fn cocok(string: &str) {
         } else {
             let last = match stack.pop() {
                 Some(val) => val,
-                None => '-'
+                None => '-',
             };
 
             println!("last: {:?}", last);
@@ -56,6 +56,6 @@ fn cocok(string: &str) {
     if stack.len() != 0 {
         res = false;
     }
-    
+
     println!("res: {:?}", res);
 }
